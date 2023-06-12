@@ -1,0 +1,180 @@
+<!DOCTYPE HTML>
+<!--
+	Solid State by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Elements - Solid State by HTML5 UP</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Page Wrapper -->
+			<div id="page-wrapper">
+
+				<!-- Header -->
+					<header id="header">
+						<h1><a href="index.html">S.M.</a></h1>
+						<nav>
+							<a href="#menu">Menu</a>
+						</nav>
+					</header>
+
+				<!-- Menu -->
+					<nav id="menu">
+						<div class="inner">
+							<h2>Menu</h2>
+							<ul class="links">
+								<li><a href="index.html">Home</a></li>
+							</ul>
+							<a href="#" class="close">Close</a>
+						</div>
+					</nav>
+
+				<!-- Wrapper -->
+					<section id="wrapper">
+						<header>
+							<div class="inner">
+								<h2>London Airbnb Listings March 2023</h2>
+								<p>This project aims to prepare the data for analysis by filtering out data outside in UK.</p>
+								<p>Raw data set : <a href="https://www.kaggle.com/datasets/minemartin/london-airbnb-listings-march-2023">London Airbnb Listings March 2023</a></p>
+							</div>
+						</header>
+
+						<!-- Content -->
+							<div class="wrapper">
+								<div class="inner">
+
+									<section>
+										<h4 class="major">Google Sheet</h4>
+										<p>Open this <a href="#">Cleaned Airbnb Listings in London</a> to check how it was done using Google Sheets aiming the same results.</p>
+										
+										<h4  class="major">SQL </h4>
+										<p>The following query was done in <a href="#">BigQuery - Googgle console</a>.</p>
+
+										<pre><code>/*
+Cleaning Data in SQL Queries
+Dataset:https://www.kaggle.com/datasets/minemartin/london-airbnb-listings-march-2023
+*/
+
+--SELECT * FROM `coursera-385403.london_airbnb_listings_march_2023.listings` LIMIT 1000;
+
+--------------------------------------------------------------------------------------------------------------------------
+
+-- Checking highly significant attributes for null values
+
+WITH null_host_location AS
+	(SELECT 
+	COUNT(*) null_host_location_count
+	FROM 
+	`coursera-385403.london_airbnb_listings_march_2023.listings`
+	WHERE 
+	host_location IS NULL OR TRIM(host_location) = '' ) ,
+	null_property_type AS
+	(SELECT 
+	COUNT(*) null_property_type_count
+	FROM 
+	`coursera-385403.london_airbnb_listings_march_2023.listings`
+	WHERE 
+	property_type IS NULL OR TRIM(property_type) = '' ),
+	null_room_type AS
+	(SELECT 
+	COUNT(*) null_room_type_count
+	FROM 
+	`coursera-385403.london_airbnb_listings_march_2023.listings`
+	WHERE 
+	room_type IS NULL OR TRIM(room_type) = '' ),
+	null_price_or_zero AS
+	(SELECT 
+	COUNT(*) null_price_or_zero_count
+	FROM 
+	`coursera-385403.london_airbnb_listings_march_2023.listings`
+	WHERE 
+	price IS NULL OR price = 0 )
+SELECT 
+	null_host_location_count, null_property_type_count, null_room_type_count,null_price_or_zero_count 
+FROM null_host_location,null_property_type,null_room_type,null_price_or_zero;
+
+-- Filtering null host_location and null or zero price
+SELECT 
+	*
+FROM `coursera-385403.london_airbnb_listings_march_2023.listings`
+WHERE host_location IS NOT NULL OR TRIM(host_location) != ''
+	AND price > 0;
+
+
+-- Classifying property_type to `entire_unit`, `private_room`, `others`
+-- Classifying room_type_type to `entire_home_apt`, `private_room`, `others`
+-- Classifying prices in to ranges 1-50 = `cheap` , 51-99 = `average` , 99+ = `expensive`
+-- Filter out listing outside UK
+SELECT 
+	*,
+	CASE
+	WHEN LOWER(TRIM(property_type)) = 'entire rental unit' THEN 'entire_unit'
+	WHEN LOWER(TRIM(property_type)) = 'private room in rental unit' THEN 'private_room'
+	ELSE 'others'
+	END AS property_type_classification,
+	CASE
+	WHEN LOWER(TRIM(room_type)) = 'entire home/apt' THEN 'entire_home_apt'
+	WHEN LOWER(TRIM(room_type)) = 'private room' THEN 'private_room'
+	ELSE 'others'
+	END AS room_type_classification,
+	CASE 
+	WHEN price BETWEEN 1 AND 49 THEN 'cheap'
+	WHEN price BETWEEN 50 AND 99 THEN 'average'
+	ELSE 'expensive'
+	END AS price_classification
+FROM `coursera-385403.london_airbnb_listings_march_2023.listings`
+WHERE 
+	(host_location IS NOT NULL OR TRIM(host_location) != '')
+	AND price > 0
+	AND LOWER(TRIM(host_location)) LIKE '%united kingdom%';
+
+--Calculate the sum Airbnb listings in each location
+
+SELECT 
+	host_location,
+	COUNT(host_location) as listing_count
+FROM `coursera-385403.london_airbnb_listings_march_2023.listings`
+WHERE 
+	(host_location IS NOT NULL OR TRIM(host_location) != '')
+	AND price > 0
+	AND LOWER(TRIM(host_location)) LIKE '%united kingdom%'
+GROUP BY host_location;
+											</code></pre>
+									</section>
+
+									
+
+								</div>
+							</div>
+
+					</section>
+
+				<!-- Footer -->
+					<section id="footer">
+						<div class="inner">
+							
+							<ul class="copyright">
+								<li>&copy; Soliver Mazo. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+							</ul>
+						</div>
+					</section>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
